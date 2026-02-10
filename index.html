@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Shield | كاشف الروابط النصابة</title>
+    <link rel="stylesheet" href="Style.css">
+    <link rel="icon" type="image/png" href="SHIELD-removebg-preview.png">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body class="cyber-theme">
+    <div class="app-container">
+        <!-- Navigation -->
+        <nav class="cyber-nav">
+            <div class="nav-logo" onclick="showPage('scanner')">
+                <img src="SHIELD-removebg-preview.png" alt="Link Shield Logo">
+            </div>
+            <button class="theme-toggle-btn" onclick="toggleTheme()" title="تغيير المظهر">🌓</button>
+            <button class="nav-link active" onclick="showPage('scanner')">🔍 كاشف الروابط</button>
+            <button class="nav-link" onclick="showPage('tips')">🛡️ نصائح الحماية</button>
+        </nav>
+
+        <!-- Page 1: Scanner (Default) -->
+        <section id="scanner-page" class="page-section active">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="shield-logo">
+                    <div class="glitch-wrapper">
+                        <h1 class="glitch" data-text="LINK SHIELD">LINK SHIELD</h1>
+                    </div>
+                    <p class="tagline">درعك الإلكتروني ضد الاحتيال </p>
+                </div>
+            </header>
+
+        <!-- Scanner Section -->
+        <div class="scanner-box">
+            <div class="input-wrapper">
+                <input type="text" id="url-input" placeholder="ألصق الرابط المشبوه هنا لفحصه..." autocomplete="off">
+                <button id="scan-btn" onclick="startScan()">فحص الروابط</button>
+            </div>
+            <div class="scan-line"></div>
+        </div>
+
+        <!-- Scan History (Refined) -->
+        <div id="history-section" class="history-container card reveal-init" style="display: none;">
+            <div class="history-header">
+                <h3>السجل الأخير للفحص</h3>
+                <button class="clear-btn" onclick="clearHistory()">مسح السجل</button>
+            </div>
+            <div id="history-list" class="history-list"></div>
+        </div>
+
+        <!-- Dashboard / Results -->
+        <main class="dashboard" id="results-dashboard" style="display: none;">
+            <!-- Score Meter -->
+            <div class="score-card card">
+                <h3>درجة الخطورة</h3>
+                <div class="meter-container">
+                    <svg viewBox="0 0 100 100" class="meter-svg">
+                        <circle cx="50" cy="50" r="45" class="meter-bg"></circle>
+                        <circle cx="50" cy="50" r="45" class="meter-fill" id="meter-fill"></circle>
+                    </svg>
+                    <div class="score-val" id="score-val">0%</div>
+                </div>
+                <p id="risk-status" class="status-text">--</p>
+                <button id="copy-report-btn" class="secondary-btn" onclick="copyReport()" style="display: none;">📋 نسخ تقرير التحذير</button>
+            </div>
+
+            <!-- Analysis Details -->
+            <div class="details-card card">
+                <h3>تحليل البيانات</h3>
+                <ul id="analysis-list" class="analysis-list">
+                    <!-- Results injected by JS -->
+                </ul>
+            </div>
+
+            <!-- Tips Section -->
+            <div class="tips-card card">
+                <h3>بروتوكول الحماية</h3>
+                <div id="tips-container" class="tips-grid">
+                    <!-- Tips injected by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Page 2: Security Tips -->
+        <section id="tips-page" class="page-section">
+            <header class="main-header">
+                <h1 class="glitch" data-text="SECURITY TIPS">SECURITY TIPS</h1>
+                <p class="tagline">كيف تحمي نفسك من العالم الرقمي المظلم؟</p>
+            </header>
+
+            <div class="tips-education-grid">
+                <div class="edu-card card">
+                    <div class="edu-icon">🔑</div>
+                    <h4>قوة كلمات المرور</h4>
+                    <p>استخدم كلمات مرور تزيد عن 14 حرفاً، تجمع بين الرموز (!@#) والأرقام. لا تستخدم نفس الكلمة لحسابين مختلفين.</p>
+                </div>
+                <div class="edu-card card">
+                    <div class="edu-icon">📱</div>
+                    <h4>التحقق بخطوتين (2FA)</h4>
+                    <p>فعل دائماً خاصية التحقق بخطوتين عبر تطبيقات مثل Google Authenticator، فهي خط الدفاع الأخير ضد الاختراق.</p>
+                </div>
+                <div class="edu-card card">
+                    <div class="edu-icon">✉️</div>
+                    <h4>فخ الواتساب والإيميل</h4>
+                    <p>روابط "إيقاف الحساب" أو "جوائز الصدفة" هي فخاخ لسرقة بياناتك. لا تضغط على أي رابط من مصدر مجهول.</p>
+                </div>
+                <div class="edu-card card">
+                    <div class="edu-icon">🌐</div>
+                    <h4>علامة القفل HTTPS</h4>
+                    <p>تأكد من وجود حرف S في بداية الرابط (https://)؛ هذا يعني أن بياناتك مشفرة ولا يمكن لأحد اعتراضها في الطريق.</p>
+                </div>
+                <div class="edu-card card">
+                    <div class="edu-icon">📶</div>
+                    <h4>أمان الـ Wi-Fi العام</h4>
+                    <p>تجنب إجراء عمليات بنكية أو شراء إلكتروني أثناء الاتصال بشبكة Wi-Fi عامة (في المطار أو المقهى).</p>
+                </div>
+                <div class="edu-card card">
+                    <div class="edu-icon">🤖</div>
+                    <h4>الهندسة الاجتماعية</h4>
+                    <p>لا تشارك أبداً رقم الـ OTP أو كود تفعيل الواتساب مع أي شخص يطلبه عبر الهاتف، حتى لو ادعى أنه موظف بنكي.</p>
+                </div>
+                <div class="edu-card card">
+                    <div class="edu-icon">🔄</div>
+                    <h4>تحديثات النظام</h4>
+                    <p>تحديثات الويندوز والاندرويد ليست مجرد شكل؛ هي تغلق ثغرات أمنية خطيرة يستخدمها الهاكرز للوصول لجهازك.</p>
+                </div>
+                <div class="edu-card card">
+                    <div class="edu-icon">📦</div>
+                    <h4>صلاحيات التطبيقات</h4>
+                    <p>راجع صلاحيات تطبيقات موبايلك؛ لماذا يحتاج تطبيق "آلة حاسبة" للوصول إلى الميكروفون أو جهات الاتصال؟</p>
+                </div>
+                <div class="edu-card card">
+                    <div class="edu-icon">💳</div>
+                    <h4>المعاملات البنكية الآمنة</h4>
+                    <p>لا تدخل بيانات بطاقتك الائتمانية إلا في التطبيقات الرسمية للبنك. وتأكد من استخدام بطاقة إنترنت (Virtual Card) للشراء أونلاين.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer Disclaimer -->
+        <footer class="cyber-footer">
+            <div class="disclaimer-box">
+                <span class="warning-icon">⚠️</span>
+                <p>هذا الموقع أداة تعليمية تساعدك على كشف علامات الاحتيال الشائعة، لكنه لا يغني عن حذرك الشخصي واستخدام برامج الحماية المتكاملة.</p>
+            </div>
+            <div class="footer-bottom">
+                &copy; 2026 Link Shield | Created by AHMED EMAD IBRAHIM
+            </div>
+        </footer>
+
+        <!-- Footer Background Elements -->
+        <div class="bg-effects">
+            <div class="grid-lines"></div>
+            <div class="glow-orb"></div>
+        </div>
+    </div>
+
+    <script src="Js.js"></script>
+</body>
+</html>
