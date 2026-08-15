@@ -1,9 +1,4 @@
-/**
- * Link Shield Logic
- * Heuristic Analysis & Page Navigation
- */
-
-// --- Service Worker Registration (Offline Support) ---
+// --- Service Worker Registration ---
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
@@ -25,24 +20,21 @@ function loadState() {
     }
 
     const savedPage = localStorage.getItem('shield_page') || 'scanner';
-    showPage(savedPage, true); // Pass true to indicate it's an initial load
+    showPage(savedPage, true);
 }
 
 document.addEventListener('DOMContentLoaded', loadState);
 
-// --- Input & Results Persistence ---
+// --- Input Persistence Cleanup ---
 document.addEventListener('DOMContentLoaded', () => {
     const urlInput = document.getElementById('url-input');
     const dashboard = document.getElementById('results-dashboard');
     
     urlInput.addEventListener('input', (e) => {
         const val = e.target.value;
-        // Persistence removed as per user request
-        
         if (val.trim() === '') {
             dashboard.style.display = 'none';
             localStorage.removeItem('shield_last_result');
-            // Reset meter visually
             document.getElementById('meter-fill').style.strokeDashoffset = 283;
             document.getElementById('score-val').innerText = '0%';
         }
@@ -67,14 +59,13 @@ function initReveal() {
 
 document.addEventListener('DOMContentLoaded', initReveal);
 
-// --- Digital Counter ---
+// --- Digital Counter Animation ---
 function animateValue(id, start, end, duration) {
     const obj = document.getElementById(id);
     let startTimestamp = null;
     const step = (timestamp) => {
         if (!startTimestamp) startTimestamp = timestamp;
         const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-        // Easing function (outQuad)
         const easedProgress = progress * (2 - progress);
         const currentVal = Math.floor(easedProgress * (end - start) + start);
         obj.innerHTML = currentVal + "%";
@@ -86,7 +77,6 @@ function animateValue(id, start, end, duration) {
 }
 
 function showPage(pageId, isInitialLoad = false) {
-    // Add active class to buttons
     document.querySelectorAll('.nav-link').forEach(btn => {
         btn.classList.remove('active');
         if (btn.innerText.includes(pageId === 'scanner' ? 'كاشف' : 'نصائح')) {
@@ -94,13 +84,11 @@ function showPage(pageId, isInitialLoad = false) {
         }
     });
 
-    // Switch visible section
     document.querySelectorAll('.page-section').forEach(page => {
         page.classList.remove('active');
     });
     document.getElementById(pageId + '-page').classList.add('active');
 
-    // Persist page state
     localStorage.setItem('shield_page', pageId);
 
     if (pageId === 'scanner') {
@@ -114,22 +102,45 @@ function showPage(pageId, isInitialLoad = false) {
     }
 }
 
+// --- High Precision URL Helper ---
+function parseAndValidateURL(rawInput) {
+    let input = rawInput.trim();
+
+    // 1. Check for spaces
+    if (/\s/.test(input)) return null;
+
+    // 2. Add protocol if missing for URL Parsing
+    if (!/^https?:\/\//i.test(input)) {
+        input = 'https://' + input;
+    }
+
+    try {
+        const parsed = new URL(input);
+        
+        // Ensure hostname has a valid structure (must contain a dot or be IP/localhost)
+        const hasValidHost = parsed.hostname.includes('.') || parsed.hostname === 'localhost';
+        if (!hasValidHost) return null;
+
+        return parsed;
+    } catch (e) {
+        return null;
+    }
+}
+
 async function startScan() {
     const urlInput = document.getElementById('url-input');
-    const url = urlInput.value.trim();
+    const rawUrl = urlInput.value.trim();
     
-    if (!url) {
+    if (!rawUrl) {
         alert("يرجى إدخال رابط للفحص.");
         return;
     }
 
-    // Simplified URL Validation
-    // Accepts any string with a dot or protocol, rejects plain text/numbers with no structure
-    const isLink = url.includes('.') || /^(https?:\/\/|www\.)/i.test(url);
-    const hasSpace = /\s/.test(url);
+    // Precise Validation Engine Check
+    const parsedURL = parseAndValidateURL(rawUrl);
 
-    if (!isLink || hasSpace) {
-        alert("هذا ليس رابطاً صحيحاً! يرجى إدخال رابط صالح لفحصه.");
+    if (!parsedURL) {
+        alert("هذا ليس رابطاً صحيحاً! يرجى إدخال رابط معتمد مثل (example.com أو https://example.com)");
         return;
     }
 
@@ -138,13 +149,12 @@ async function startScan() {
     const dashboard = document.getElementById('results-dashboard');
     scannerBox.classList.add('scanning');
     
-    // Simulate Processing Time for Realistic Feel
     setTimeout(() => {
-        analyzeLink(url);
+        analyzeLink(parsedURL, rawUrl);
         scannerBox.classList.remove('scanning');
         dashboard.style.display = 'grid';
         dashboard.scrollIntoView({ behavior: 'smooth' });
-    }, 1500);
+    }, 1200);
 }
 
 // Add Enter Key Listener
@@ -154,69 +164,100 @@ document.getElementById('url-input').addEventListener('keydown', function(e) {
     }
 });
 
-function analyzeLink(url) {
+// --- Advanced Heuristic Analysis Engine ---
+function analyzeLink(parsedURL, rawInput) {
     let score = 0;
     let details = [];
     let tips = [];
 
-    // 1. Protocol Check (HTTPS vs HTTP)
-    if (url.startsWith('http://')) {
-        score += 30;
-        details.push({ label: 'تشفير الموقع', status: 'خطر (HTTP)', type: 'danger' });
-        tips.push('الموقع لا يشفر بياناتك، لا تدخل أي كلمات مرور أو معلومات بنكية.');
-    } else if (url.startsWith('https://')) {
+    const protocol = parsedURL.protocol;
+    const hostname = parsedURL.hostname.toLowerCase();
+    const fullPath = parsedURL.href.toLowerCase();
+
+    // 1. Protocol Verification
+    if (protocol === 'http:') {
+        score += 35;
+        details.push({ label: 'تشفير الموقع', status: 'غير آمن (HTTP)', type: 'danger' });
+        tips.push('الموقع غير مشفر؛ لا تدخل كلمات مرور أو معلومات حساسه عبره.');
+    } else if (protocol === 'https:') {
         details.push({ label: 'تشفير الموقع', status: 'آمن (HTTPS)', type: 'safe' });
-    } else {
-        score += 10;
-        details.push({ label: 'تشفير الموقع', status: 'غير معروف', type: 'danger' });
     }
 
-    // 2. Domain & TLD Analysis
-    const domainMatch = url.match(/:\/\/(.[^/]+)/);
-    const domain = domainMatch ? domainMatch[1] : url;
-
-    // Check for suspicious TLDs (cheap/free ones often used for phishing)
-    const suspiciousTLDs = ['.tk', '.ml', '.ga', '.cf', '.gq', '.xyz', '.top'];
-    if (suspiciousTLDs.some(tld => domain.endsWith(tld))) {
-        score += 25;
-        details.push({ label: 'امتداد النطاق', status: 'مشبوه', type: 'danger' });
-        tips.push('المجربات المجانية (مثل .tk) تستخدم بكثرة في عمليات الاحتيال.');
-    } else {
-        details.push({ label: 'امتداد النطاق', status: 'عادي', type: 'safe' });
+    // 2. IP Address Host Check
+    const isIP = /^(\d{1,3}\.){3}\d{1,3}$/.test(hostname);
+    if (isIP) {
+        score += 45;
+        details.push({ label: 'عنوان النطاق', status: 'عنوان IP مباشر', type: 'danger' });
+        tips.push('المواقع الشرعية تستخدم أسماء نطاقات وليس عناوين IP مباشرة.');
     }
 
-    // 3. Keyword Analysis (Sensory Phishing)
-    const phishingKeywords = ['login', 'verify', 'secure', 'bank', 'update', 'account', 'gift', 'win', 'prize'];
-    const foundKeywords = phishingKeywords.filter(kw => url.toLowerCase().includes(kw));
+    // 3. Non-Standard Port Analysis
+    if (parsedURL.port && !['80', '443'].includes(parsedURL.port)) {
+        score += 20;
+        details.push({ label: 'منفذ الاتصال', status: `منفذ غير معتاد (${parsedURL.port})`, type: 'danger' });
+        tips.push('استخدام منافذ مخصصة يسخدم أحياناً للالتفاف على أنظمة الفلترة الأمنية.');
+    }
+
+    // 4. Suspicious TLD Check
+    const suspiciousTLDs = ['.tk', '.ml', '.ga', '.cf', '.gq', '.xyz', '.top', '.zip', '.mov', '.work', '.click'];
+    const hasSuspiciousTLD = suspiciousTLDs.some(tld => hostname.endsWith(tld));
+    if (hasSuspiciousTLD) {
+        score += 30;
+        details.push({ label: 'امتداد النطاق', status: 'مشبوه مجاني/رخيص', type: 'danger' });
+        tips.push('النطاقات المجانية أو المجهولة تُستغل بكثرة في الحملات الاحتيالية.');
+    } else if (!isIP) {
+        details.push({ label: 'امتداد النطاق', status: 'نطاق قياسي', type: 'safe' });
+    }
+
+    // 5. Excessive Subdomains Check
+    const domainParts = hostname.split('.');
+    if (domainParts.length > 3 && !isIP) {
+        score += 20;
+        details.push({ label: 'النطاقات الفرعية', status: 'كثرة النطاقات الفرعية', type: 'danger' });
+        tips.push('دمج أكثر من نطاق فرعي يستهدف إخفاء الرابط الحقيقي للموقع.');
+    }
+
+    // 6. Sensational Phishing Keywords
+    const phishingKeywords = ['login', 'verify', 'secure', 'bank', 'update', 'account', 'gift', 'win', 'prize', 'free', 'wallet', 'claim', 'bonus', 'support'];
+    const foundKeywords = phishingKeywords.filter(kw => fullPath.includes(kw));
     if (foundKeywords.length > 0) {
-        score += (foundKeywords.length * 15);
-        details.push({ label: 'الكلمات المفتاحية', status: 'تحذيرية', type: 'danger' });
-        tips.push(`الرابط يحتوي على كلمات مثل (${foundKeywords.join(', ')}) التي تحاول إيهامك بالحاجة إلى إجراء عاجل.`);
+        score += Math.min(foundKeywords.length * 15, 30);
+        details.push({ label: 'كلمات مفتاحية', status: 'كلمات استدراجية', type: 'danger' });
+        tips.push(`يحتوي الرابط على كلمات حساسة (${foundKeywords.slice(0, 3).join(', ')}) تستخدم غالباً لاستدراج الضحايا.`);
     }
 
-    // 4. Typosquatting (Simple Check)
-    const commonSites = ['google', 'facebook', 'instagram', 'paypal', 'apple', 'microsoft', 'amazon'];
-    commonSites.forEach(site => {
-        if (domain.includes(site) && !domain.startsWith(site) && domain !== site + '.com') {
-            score += 40;
-            details.push({ label: 'تشابه أسماء', status: 'خداع بصري', type: 'danger' });
-            tips.push(`هذا الرابط يحاول تقليد موقع ${site} الشهير، احذر من انتحال الشخصية.`);
+    // 7. Typosquatting / Brand Imitation
+    const brandTargets = ['google', 'facebook', 'instagram', 'paypal', 'apple', 'microsoft', 'amazon', 'binance', 'netflix', 'whatsapp'];
+    let brandImitated = false;
+
+    brandTargets.forEach(brand => {
+        if (hostname.includes(brand)) {
+            const isExactMatch = hostname === `${brand}.com` || hostname.endsWith(`.${brand}.com`);
+            if (!isExactMatch) {
+                brandImitated = true;
+                score += 45;
+                tips.push(`الرابط يحاول انتحال العلامة التجارية (${brand}). تحقق من الحروف بدقة.`);
+            }
         }
     });
 
-    // 5. URL Length Analysis
-    if (url.length > 100) {
-        score += 20;
-        details.push({ label: 'طول الرابط', status: 'طويل جداً', type: 'danger' });
-        tips.push('الروابط الطويلة والمعقدة تستخدم أحياناً لإخفاء اسم الدومين الحقيقي.');
+    if (brandImitated) {
+        details.push({ label: 'فحص انتحال الهوية', status: 'انتحال علامة تجارية', type: 'danger' });
+    } else {
+        details.push({ label: 'فحص انتحال الهوية', status: 'لا يوجد انتحال واضح', type: 'safe' });
+    }
+
+    // 8. Symbol '@' Detection (Credential Trick)
+    if (rawInput.includes('@')) {
+        score += 50;
+        details.push({ label: 'تحليل الرموز', status: 'رمز @ مشبوه', type: 'danger' });
+        tips.push('وجود الرمز @ في الرابط يُستخدم لتجاهل كل ما قبله وتوجيهك لرابط آخر خفي.');
     }
 
     // Cap Score at 100
     score = Math.min(score, 100);
     updateResultUI(score, details, tips);
-    
-    // Animate score value
-    animateValue('score-val', 0, score, 2000);
+    animateValue('score-val', 0, score, 1500);
 }
 
 function updateResultUI(score, details, tips, isRestoring = false) {
@@ -230,20 +271,19 @@ function updateResultUI(score, details, tips, isRestoring = false) {
         localStorage.setItem('shield_last_result', JSON.stringify({ score, details, tips }));
     }
 
-    // Update Meter
+    // Meter Fill Logic
     const dashOffset = 283 - (283 * score / 100);
     meterFill.style.strokeDashoffset = dashOffset;
-    // scoreVal.innerText = score + '%'; // Animation handles this now
 
-    // Color based on risk
+    // Severity Colors & Text
     let color = 'var(--neon-green)';
-    let status = 'آمن جداً';
-    if (score > 30) { color = '#ffeb3b'; status = 'مخاطرة منخفضة'; }
-    if (score > 60) { color = '#ff9800'; status = 'مخاطرة عالية'; }
-    if (score > 80) { color = 'var(--neon-red)'; status = 'رابط نصاب مؤكد'; }
+    let status = 'آمن وسليم';
+    if (score > 25) { color = '#ffeb3b'; status = 'مخاطرة منخفضة'; }
+    if (score > 55) { color = '#ff9800'; status = 'مخاطرة متوسطة إلى عالية'; }
+    if (score > 75) { color = 'var(--neon-red)'; status = 'رابط احتيالي مؤكد'; }
 
     const scoreCard = document.querySelector('.score-card');
-    if (score > 70) {
+    if (score > 65) {
         scoreCard.classList.add('danger-active');
     } else {
         scoreCard.classList.remove('danger-active');
@@ -254,7 +294,7 @@ function updateResultUI(score, details, tips, isRestoring = false) {
     riskStatus.innerText = status;
     riskStatus.style.color = color;
 
-    // Render Analysis
+    // Render Analysis List
     analysisList.innerHTML = details.map(item => `
         <li class="analysis-item">
             <span class="item-label">${item.label}</span>
@@ -262,18 +302,17 @@ function updateResultUI(score, details, tips, isRestoring = false) {
         </li>
     `).join('');
 
-    // Render Tips
-    if (tips.length === 0) tips.push('الرابط يبدو سليماً، ولكن دائماً توخ الحذر عند إدخال بياناتك الشخصية.');
+    // Render Tips Section
+    if (tips.length === 0) tips.push('الرابط اجتاز جميع الفحوصات الأولية بنجاح. كن حذراً دائماً قبل إدخال أي بيانات.');
     tipsContainer.innerHTML = '';
     
     tips.forEach((tip, index) => {
         const div = document.createElement('div');
         div.className = 'tip-item reveal-init';
         div.textContent = tip;
-        div.style.transitionDelay = (index * 0.15) + 's';
+        div.style.transitionDelay = (index * 0.1) + 's';
         tipsContainer.appendChild(div);
         
-        // Trigger reveal after a small delay
-        setTimeout(() => div.classList.add('reveal-active'), 50);
+        setTimeout(() => div.classList.add('reveal-active'), 40);
     });
 }
