@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Shield | كاشف الروابط النصابة</title>
+    <title>Link Shield | كاشف الروابط الضاره</title>
     <link rel="stylesheet" href="Style.css">
     <link rel="icon" type="image/png" href="SHIELD-removebg-preview.png">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -28,59 +28,51 @@
                     <div class="glitch-wrapper">
                         <h1 class="glitch" data-text="LINK SHIELD">LINK SHIELD</h1>
                     </div>
-                    <p class="tagline">درعك الإلكتروني ضد الاحتيال </p>
+                    <p class="tagline">درعك الإلكتروني ضد الاحتيال</p>
                 </div>
             </header>
 
-        <!-- Scanner Section -->
-        <div class="scanner-box">
-            <div class="input-wrapper">
-                <input type="text" id="url-input" placeholder="ألصق الرابط المشبوه هنا لفحصه..." autocomplete="off">
-                <button id="scan-btn" onclick="startScan()">فحص الروابط</button>
-            </div>
-            <div class="scan-line"></div>
-        </div>
-
-        <!-- Scan History (Refined) -->
-        <div id="history-section" class="history-container card reveal-init" style="display: none;">
-            <div class="history-header">
-                <h3>السجل الأخير للفحص</h3>
-                <button class="clear-btn" onclick="clearHistory()">مسح السجل</button>
-            </div>
-            <div id="history-list" class="history-list"></div>
-        </div>
-
-        <!-- Dashboard / Results -->
-        <main class="dashboard" id="results-dashboard" style="display: none;">
-            <!-- Score Meter -->
-            <div class="score-card card">
-                <h3>درجة الخطورة</h3>
-                <div class="meter-container">
-                    <svg viewBox="0 0 100 100" class="meter-svg">
-                        <circle cx="50" cy="50" r="45" class="meter-bg"></circle>
-                        <circle cx="50" cy="50" r="45" class="meter-fill" id="meter-fill"></circle>
-                    </svg>
-                    <div class="score-val" id="score-val">0%</div>
+            <!-- Scanner Section -->
+            <div class="scanner-box">
+                <div class="input-wrapper">
+                    <input type="text" id="url-input" placeholder="أدخل أو ألصق الرابط هنا لفحصه..." autocomplete="off">
+                    <button id="scan-btn" onclick="startScan()">فحص الروابط</button>
                 </div>
-                <p id="risk-status" class="status-text">--</p>
-                <button id="copy-report-btn" class="secondary-btn" onclick="copyReport()" style="display: none;">📋 نسخ تقرير التحذير</button>
+                <div class="scan-line"></div>
             </div>
 
-            <!-- Analysis Details -->
-            <div class="details-card card">
-                <h3>تحليل البيانات</h3>
-                <ul id="analysis-list" class="analysis-list">
-                    <!-- Results injected by JS -->
-                </ul>
-            </div>
-
-            <!-- Tips Section -->
-            <div class="tips-card card">
-                <h3>بروتوكول الحماية</h3>
-                <div id="tips-container" class="tips-grid">
-                    <!-- Tips injected by JS -->
+            <!-- Dashboard / Results -->
+            <main class="dashboard" id="results-dashboard" style="display: none;">
+                <!-- Score Meter -->
+                <div class="score-card card">
+                    <h3>درجة الخطورة</h3>
+                    <div class="meter-container">
+                        <svg viewBox="0 0 100 100" class="meter-svg">
+                            <circle cx="50" cy="50" r="45" class="meter-bg"></circle>
+                            <circle cx="50" cy="50" r="45" class="meter-fill" id="meter-fill"></circle>
+                        </svg>
+                        <div class="score-val" id="score-val">0%</div>
+                    </div>
+                    <p id="risk-status" class="status-text">--</p>
+                    <button id="copy-report-btn" class="secondary-btn" onclick="copyReport()" style="display: none;">📋 نسخ تقرير التحذير</button>
                 </div>
-            </div>
+
+                <!-- Analysis Details -->
+                <div class="details-card card">
+                    <h3>تحليل البيانات</h3>
+                    <ul id="analysis-list" class="analysis-list">
+                        <!-- Results injected by JS -->
+                    </ul>
+                </div>
+
+                <!-- Tips Section -->
+                <div class="tips-card card">
+                    <h3>بروتوكول الحماية</h3>
+                    <div id="tips-container" class="tips-grid">
+                        <!-- Tips injected by JS -->
+                    </div>
+                </div>
+            </main>
         </section>
 
         <!-- Page 2: Security Tips -->
@@ -124,7 +116,7 @@
                 <div class="edu-card card">
                     <div class="edu-icon">🔄</div>
                     <h4>تحديثات النظام</h4>
-                    <p>تحديثات الويندوز والاندرويد ليست مجرد شكل؛ هي تغلق ثغرات أمنية خطيرة يستخدمها الهاكرز للوصول لجهازك.</p>
+                    <p>تحديثات الويندوز والأندرويد ليست مجرد شكل؛ هي تغلق ثغرات أمنية خطيرة يستخدمها الهاكرز للوصول لجهازك.</p>
                 </div>
                 <div class="edu-card card">
                     <div class="edu-icon">📦</div>
@@ -150,7 +142,7 @@
             </div>
         </footer>
 
-        <!-- Footer Background Elements -->
+        <!-- Background Effects -->
         <div class="bg-effects">
             <div class="grid-lines"></div>
             <div class="glow-orb"></div>
