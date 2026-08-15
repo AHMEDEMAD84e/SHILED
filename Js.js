@@ -129,6 +129,7 @@ function parseAndValidateURL(rawInput) {
 
 async function startScan() {
     const urlInput = document.getElementById('url-input');
+    const scanBtn = document.getElementById('scan-btn');
     const rawUrl = urlInput.value.trim();
     
     if (!rawUrl) {
@@ -147,11 +148,14 @@ async function startScan() {
     // UI Feedback
     const scannerBox = document.querySelector('.scanner-box');
     const dashboard = document.getElementById('results-dashboard');
+    
     scannerBox.classList.add('scanning');
+    scanBtn.classList.add('loading');
     
     setTimeout(() => {
         analyzeLink(parsedURL, rawUrl);
         scannerBox.classList.remove('scanning');
+        scanBtn.classList.remove('loading');
         dashboard.style.display = 'grid';
         dashboard.scrollIntoView({ behavior: 'smooth' });
     }, 1200);
@@ -178,7 +182,7 @@ function analyzeLink(parsedURL, rawInput) {
     if (protocol === 'http:') {
         score += 35;
         details.push({ label: 'تشفير الموقع', status: 'غير آمن (HTTP)', type: 'danger' });
-        tips.push('الموقع غير مشفر؛ لا تدخل كلمات مرور أو معلومات حساسه عبره.');
+        tips.push('الموقع غير مشفر؛ لا تدخل كلمات مرور أو معلومات حساسة عبره.');
     } else if (protocol === 'https:') {
         details.push({ label: 'تشفير الموقع', status: 'آمن (HTTPS)', type: 'safe' });
     }
@@ -195,7 +199,7 @@ function analyzeLink(parsedURL, rawInput) {
     if (parsedURL.port && !['80', '443'].includes(parsedURL.port)) {
         score += 20;
         details.push({ label: 'منفذ الاتصال', status: `منفذ غير معتاد (${parsedURL.port})`, type: 'danger' });
-        tips.push('استخدام منافذ مخصصة يسخدم أحياناً للالتفاف على أنظمة الفلترة الأمنية.');
+        tips.push('استخدام منافذ مخصصة يُستخدم أحياناً للالتفاف على أنظمة الفلترة الأمنية.');
     }
 
     // 4. Suspicious TLD Check
@@ -247,7 +251,7 @@ function analyzeLink(parsedURL, rawInput) {
         details.push({ label: 'فحص انتحال الهوية', status: 'لا يوجد انتحال واضح', type: 'safe' });
     }
 
-    // 8. Symbol '@' Detection (Credential Trick)
+    // 8. Symbol '@' Detection
     if (rawInput.includes('@')) {
         score += 50;
         details.push({ label: 'تحليل الرموز', status: 'رمز @ مشبوه', type: 'danger' });
@@ -314,5 +318,27 @@ function updateResultUI(score, details, tips, isRestoring = false) {
         tipsContainer.appendChild(div);
         
         setTimeout(() => div.classList.add('reveal-active'), 40);
+    });
+
+    // Show Copy Report Button
+    document.getElementById('copy-report-btn').style.display = 'block';
+}
+
+// --- Copy Warning Report Helper ---
+function copyReport() {
+    const scoreVal = document.getElementById('score-val').innerText;
+    const riskStatus = document.getElementById('risk-status').innerText;
+    const urlInput = document.getElementById('url-input').value;
+
+    const reportText = `🛡️ *تقرير فحص الرابط عبر Link Shield*\n\n` +
+                       `🔗 الرابط: ${urlInput}\n` +
+                       `⚠️ نسبة الخطورة: ${scoreVal}\n` +
+                       `📌 الحالة: ${riskStatus}\n\n` +
+                       `احذر دائماً قبل إدخال بياناتك الشخصية!`;
+
+    navigator.clipboard.writeText(reportText).then(() => {
+        alert("تم نسخ تقرير الفحص بنجاح!");
+    }).catch(err => {
+        console.error("فشل النسخ: ", err);
     });
 }
